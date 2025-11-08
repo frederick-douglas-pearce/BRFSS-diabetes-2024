@@ -1,6 +1,5 @@
 # Data files (large, can be downloaded from source)
-*.ASC
-*.ASC
+*.ASC*
 *.zip
 *.HTML
 *.pickle
@@ -11,6 +10,7 @@
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
+
 
 # Python virtual environment
 .venv/

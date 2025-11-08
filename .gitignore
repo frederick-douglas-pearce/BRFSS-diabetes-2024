@@ -3,6 +3,10 @@
 *.ASC
 *.zip
 *.HTML
+*.pickle
+*.pkl
+*.parquet
+*.csv
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/

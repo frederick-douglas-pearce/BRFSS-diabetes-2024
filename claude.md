@@ -97,7 +97,7 @@ columns_to_extract = [
 - ⏳ Exploratory Data Analysis (EDA)
 - ⏳ Feature engineering
 - ⏳ Model training and evaluation
-- ⏳ Model deployment
+- ⏳ Model deployment via Docker container
 
 ## Important Column Information
 
@@ -216,6 +216,10 @@ for label, info in column_lookup.items():
 1. **Primary**: Predict diabetes risk based on BRFSS survey responses
 2. **Educational**: Part of Machine Learning Zoomcamp (DataTalksClub)
 3. **Technical**: Demonstrate end-to-end ML pipeline from raw data to deployment
+4. **Ultimate Goal**: Deploy a working machine learning model using Docker
+   - Details of deployment architecture to be determined as project develops
+   - Focus on creating a production-ready containerized solution
+   - Keep deployment considerations in mind throughout development
 
 ## References
 

@@ -21,7 +21,9 @@ This project uses the 2024 Behavioral Risk Factor Surveillance System (BRFSS) su
 
 ```
 BRFSS-diabetes-2024/
-├── parse_raw_data.ipynb    # Main notebook for data parsing
+├── parse_raw_data.ipynb    # Data extraction and preprocessing
+├── eda_modeling.ipynb      # EDA and modeling (in progress)
+├── diabetes_data.pickle    # Cleaned dataset (gitignored)
 ├── pyproject.toml          # Python project configuration (uv)
 ├── uv.lock                 # Dependency lock file
 ├── .python-version         # Python version specification
@@ -81,58 +83,102 @@ columns_to_extract = [
 ]
 ```
 
+## Preprocessing Strategy (eda_modeling.ipynb)
+
+### Missing Value Handling
+
+**Categorical/Ordinal Features:**
+- Map NaN and "Refused" → "Unknown"
+- Preserves information about non-response patterns
+- Applied to 14 categorical + 4 ordinal features
+
+**Numeric Features (Missing Indicator Approach):**
+- Create binary indicator columns (*_missing)
+- Impute original columns with median
+- **Critical for _DRNKWK3**: Distinguishes 0 drinks (valid) from missing data
+- Prevents conflating valid zero values with missing responses
+
+### Class Imbalance
+- Target distribution: 85.1% negative (no diabetes), 14.9% positive (has diabetes)
+- Strategy: Stratified train/val/test splitting (60/20/20)
+- Future: Consider SMOTE or class weights during modeling
+
+### Function Architecture
+All preprocessing in reusable functions to prevent side effects when re-running cells:
+- **`clean_target()`** - Binary encoding with validation and class distribution reporting
+- **`clean_features()`** - Unified cleaning for all feature types (categorical, ordinal, numeric)
+- **`split_train_val_test()`** - Stratified splitting with optional stratification column
+
 ## Current Implementation Status
 
-### Completed
-- ✅ Data download functionality (wget)
-- ✅ HTML data dictionary parsing
-- ✅ Fixed-width ASCII file parsing
-- ✅ Label-based column extraction
-- ✅ Validation and preview output
-- ✅ Initial 2 columns: State FIPS Code, Annual Sequence Number
+### parse_raw_data.ipynb - Completed ✅
+- Data download functionality (wget)
+- HTML data dictionary parsing with value label extraction
+- Fixed-width ASCII file parsing (31 columns extracted)
+- Decimal transformations (WTKG3, HTM4, _BMI5, _DRNKWK3)
+- Special code cleaning and outlier handling
+- Comprehensive validation pipeline
+- Output: diabetes_data.pickle (457,656 rows × 31 columns)
 
-### Planned
-- ⏳ Identify and extract ~25 relevant features
-- ⏳ Identify diabetes target variable(s)
-- ⏳ Exploratory Data Analysis (EDA)
-- ⏳ Feature engineering
-- ⏳ Model training and evaluation
-- ⏳ Model deployment via Docker container
+### eda_modeling.ipynb - In Progress ⏳
 
-## Important Column Information
+**Completed:**
+- Data loading and parameter configuration
+- Preprocessing functions (clean_target, clean_features, split_train_val_test)
+- Target encoding: binary (85.1% negative, 14.9% positive)
+- Feature cleaning:
+  - 14 categorical + 4 ordinal: NaN/"Refused" → "Unknown"
+  - 4 numeric + 4 missing indicators: median imputation
+- Dataset ready for EDA
 
-### Currently Extracted
+**Next Steps:**
+- Exploratory Data Analysis (EDA)
+- Feature correlation analysis and selection
+- Model training and evaluation
+- Docker deployment
 
-| Label | SAS Name | Column Range | Type | Description |
-|-------|----------|--------------|------|-------------|
-| State FIPS Code | _STATE | 1-2 | Num | State identifier |
-| Annual Sequence Number | SEQNO | 36-45 | Char | Unique record ID |
+## Extracted Variables (31 total)
 
-### Key Variables to Consider
+### Identifiers (2)
+- **_STATE**: State FIPS Code
+- **SEQNO**: Annual Sequence Number
 
-**Target Variables:**
-- `(Ever told) you had diabetes` - Column 149 (DIABETE4)
-- `Age When First Told You Had Diabetes` - Columns 150-151
+### Target Variables (3)
+- **DIABETE4**: (Ever told) you had diabetes - *Primary target*
+- **PREDIAB2**: Ever been told you have pre-diabetes or borderline diabetes
+- **DIABTYPE**: What type of diabetes do you have
 
-**Demographic Features:**
-- Sex of Respondent
-- Age categories
-- Income level
-- Education level
-- Race/ethnicity
+### Demographic Features (6)
+- **_URBSTAT**: Urban/Rural Status
+- **_AGEG5YR**: Reported age in five-year age categories (ordinal)
+- **SEXVAR**: Sex of Respondent
+- **_RACE**: Computed Race-Ethnicity grouping
+- **EDUCA**: Education Level (ordinal)
+- **INCOME3**: Income Level (ordinal)
 
-**Health-Related Features:**
-- General Health Status
-- Weight and Height (BMI calculation)
-- Exercise/physical activity
-- Smoking status
-- Alcohol consumption
+### Personal Health Features (13)
+- **PERSDOC3**: Have Personal Health Care Provider
+- **MEDCOST1**: Could Not Afford To See Doctor
+- **WTKG3**: Computed Weight in Kilograms (numeric)
+- **HTM4**: Computed Height in Meters (numeric)
+- **_BMI5**: Computed body mass index (numeric)
+- **EXERANY2**: Exercise in Past 30 Days
+- **SSBSUGR2**: How often drink regular soda with sugar (numeric)
+- **SSBFRUT3**: How often drink sugar-sweetened drinks (numeric)
+- **_SMOKER3**: Computed Smoking Status
+- **_DRNKWK3**: Computed number of drinks per week (numeric)
+- **DRNKANY6**: Drink any alcoholic beverages in past 30 days
+- **_RFDRHV9**: Heavy Alcohol Consumption Calculated Variable
+- **GENHLTH**: General Health (ordinal)
 
-**Health Conditions:**
-- High blood pressure
-- High cholesterol
-- Heart disease
-- Stroke history
+### Comorbidity Features (7)
+- **CVDINFR4**: Ever Diagnosed with Heart Attack
+- **CVDCRHD4**: Ever Diagnosed with Angina or Coronary Heart Disease
+- **CVDSTRK3**: Ever Diagnosed with a Stroke
+- **CHCKDNY2**: Ever told you have kidney disease
+- **ASTHMA3**: Ever Told Had Asthma
+- **ADDEPEV3**: (Ever told) you had a depressive disorder
+- **HAVARTH4**: Told Had Arthritis
 
 ## Data Format Notes
 
@@ -160,9 +206,23 @@ columns_to_extract = [
 - **Python Version**: Specified in `.python-version`
 - **Package Manager**: uv (see `pyproject.toml`)
 - **Key Dependencies**:
-  - pandas (data manipulation)
+  - uv (fast Python package installer and resolver)
+  - pandas, numpy (data manipulation)
   - beautifulsoup4 (HTML parsing)
+  - scikit-learn (modeling and evaluation)
+  - xgboost (gradient boosting)
+  - matplotlib, seaborn (visualization)
   - jupyter (notebook environment)
+
+### Running Notebooks
+
+```bash
+# Install dependencies with uv
+uv sync
+
+# Run Jupyter Lab with uv
+uv run --with jupyter jupyter lab
+```
 
 ## Tips for AI Assistants
 
@@ -229,4 +289,4 @@ for label, info in column_lookup.items():
 
 ---
 
-*Last Updated: 2025-11-05*
+*Last Updated: 2025-11-08*

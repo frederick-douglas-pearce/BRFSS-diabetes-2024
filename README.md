@@ -21,6 +21,7 @@ The BRFSS is an annual telephone survey conducted by the CDC that collects data 
 ```
 BRFSS-diabetes-2024/
 ├── parse_raw_data.ipynb    # Data extraction and preprocessing
+├── eda_modeling.ipynb      # EDA and modeling (in progress)
 ├── README.md               # This file
 ├── claude.md              # Detailed technical documentation
 ├── .gitignore             # Excludes large data files
@@ -60,30 +61,35 @@ BRFSS-diabetes-2024/
 - Validation pipeline ensuring data quality
 - Minimal cell output for clean notebook flow
 
-### 2. [Upcoming] EDA and Modeling Notebook
+### 2. eda_modeling.ipynb (In Progress)
 
-**Planned Contents**:
-- **Data Splitting**: Train/validation/test set creation with stratification
-- **Exploratory Data Analysis (EDA)**:
-  - Distribution analysis of target variables
-  - Feature relationships and correlations
-  - Missing data patterns and strategies
-  - Class imbalance assessment
-- **Feature Engineering**:
-  - Encoding categorical variables
-  - Handling missing values
-  - Feature scaling/normalization
-  - Feature selection
-- **Model Development**:
-  - Baseline model establishment
-  - Multiple algorithm comparison (logistic regression, tree-based methods, etc.)
-  - Hyperparameter tuning
-  - Cross-validation
-- **Model Evaluation**:
-  - Performance metrics (accuracy, precision, recall, F1, AUC-ROC)
-  - Confusion matrices
-  - Feature importance analysis
-- **Model Selection**: Final model selection and interpretation
+**Purpose**: Perform exploratory data analysis and develop predictive models for diabetes risk.
+
+**Completed**:
+- Data loading from pickle file
+- Parameter configuration (target, features categorized as categorical/ordinal/numeric)
+- Preprocessing functions:
+  - `clean_target()` - Binary encoding with class distribution (85.1% negative, 14.9% positive)
+  - `clean_features()` - Unified cleaning for all feature types:
+    - Categorical/ordinal: NaN and "Refused" → "Unknown"
+    - Numeric: Missing indicators + median imputation (preserves distinction between 0 and missing)
+  - `split_train_val_test()` - Stratified data splitting (60/20/20)
+- Feature preparation:
+  - 14 categorical features (disease indicators, demographics, behaviors)
+  - 4 ordinal features (age, education, income, general health)
+  - 4 numeric features + 4 missing indicators (WTKG3, HTM4, _BMI5, _DRNKWK3)
+- Ready for EDA phase with cleaned dataset
+
+**In Progress**:
+- Exploratory Data Analysis (EDA)
+- Feature correlation analysis (especially WTKG3/HTM4/_BMI5)
+
+**Planned**:
+- Feature Engineering and Selection
+- Model Development (logistic regression, random forest, XGBoost)
+- Hyperparameter tuning and cross-validation
+- Model Evaluation and selection
+- Docker deployment of final model
 
 ## Getting Started
 
